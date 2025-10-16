@@ -1,0 +1,23 @@
+[project]
+name = "tg2email"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10.18"
+dependencies = [
+    "imap-tools>=1.11.0",
+    "python-dotenv>=1.1.1",
+    "python-telegram-bot[ext]>=22.5",
+]
+
+[project.scripts]
+telegram-bridge = "tg2email.main:run"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+# It instructs the build system to look inside the 'src' directory
+# for any Python packages.
+where = ["src"]
