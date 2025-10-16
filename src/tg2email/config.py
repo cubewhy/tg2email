@@ -29,6 +29,7 @@ TELEGRAM_ADMIN_ID = int(get_env_variable("TELEGRAM_ADMIN_ID"))
 
 # --- IMAP (Receiving Email) Configuration ---
 IMAP_SERVER = get_env_variable("IMAP_SERVER")
+IMAP_PORT = int(get_env_variable("IMAP_PORT"))
 IMAP_USERNAME = get_env_variable("IMAP_USERNAME")
 IMAP_PASSWORD = get_env_variable("IMAP_PASSWORD")
 

@@ -3,9 +3,9 @@ import asyncio
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from typing import List, Callable, Awaitable
 
-from imap_tools import MailBox, MailMessage
+from imap_tools.mailbox import MailBox
+from imap_tools.message import MailMessage
 from telegram import Bot
 
 from . import config
@@ -50,8 +50,13 @@ async def email_checker_loop(bot: Bot):
     logger.info("Starting email checker loop...")
     while True:
         try:
+            mailbox_client = MailBox(
+                host=config.IMAP_SERVER,
+                port=config.IMAP_PORT
+            )
+            
             # Use a context manager to handle login/logout
-            with MailBox(config.IMAP_SERVER).login(config.IMAP_USERNAME, config.IMAP_PASSWORD, 'INBOX') as mailbox:
+            with mailbox_client.login(config.IMAP_USERNAME, config.IMAP_PASSWORD, 'INBOX') as mailbox:
                 # Fetch unseen emails and mark them as seen
                 unseen_messages = list(mailbox.fetch(criteria="UNSEEN", mark_seen=True))
                 if unseen_messages:
