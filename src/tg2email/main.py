@@ -1,5 +1,3 @@
-# src/main.py
-
 import asyncio
 import logging
 import sys
@@ -32,30 +30,44 @@ async def main():
         logger.critical(f"Fatal: Could not initialize database. Aborting. Error: {e}")
         return
 
+    # Create the Application instance
     application = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
+
+    # Set up the command and message handlers
     telegram_handler.setup_handlers(application)
 
-    try:
-        logger.info("Running application components...")
-        await asyncio.gather(
-            application.run_polling(),
-            email_handler.email_checker_loop(application.bot)
-        )
-    except Exception as e:
-        logger.critical(f"A critical error occurred in the main event loop: {e}")
-    finally:
-        logger.info("Application shutting down.")
+    # The modern, correct way to run the bot alongside other tasks.
+    # `async with application:` handles startup (initialize()) and shutdown gracefully.
+    async with application:
+        logger.info("Starting bot polling and email checker...")
+        try:
+            # We start the polling in the background. `start_polling` is non-blocking.
+            await application.updater.start_polling()
+
+            # Now we can run our other coroutines concurrently.
+            await asyncio.gather(
+                email_handler.email_checker_loop(application.bot)
+                # Note: We no longer put the bot itself in gather.
+                # The `async with` block keeps it alive.
+                # If you had more tasks, you'd add them here.
+            )
+
+        except Exception as e:
+            logger.critical(f"A critical error occurred in the main event loop: {e}")
+        finally:
+            logger.info("Stopping bot polling...")
+            # The context manager will handle the shutdown, but we should stop the updater.
+            if application.updater.is_running:
+                await application.updater.stop()
 
 
 def run():
     """
     Synchronous entry point for the console script.
-    Handles setup and gracefully runs the main async loop.
     """
     try:
         asyncio.run(main())
     except config.ConfigError as e:
-        # Using print here because logger might not be configured if .env fails early
         print(f"CRITICAL: Configuration Error: {e}. Please check your .env file.", file=sys.stderr)
         sys.exit(1)
     except KeyboardInterrupt:
@@ -66,5 +78,4 @@ def run():
 
 
 if __name__ == '__main__':
-    # This block allows the script to still be run with `python -m src.main`
     run()
