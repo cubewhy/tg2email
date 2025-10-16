@@ -3,14 +3,12 @@ import logging
 import sys
 
 from telegram.ext import Application
-from . import config
-from . import database
-from . import telegram_handler
-from . import email_handler
+
+from . import config, database, email_handler, telegram_handler
 
 # --- Logging Setup ---
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=sys.stdout,
 )
@@ -40,6 +38,7 @@ async def main():
     # `async with application:` handles startup (initialize()) and shutdown gracefully.
     async with application:
         logger.info("Starting bot polling and email checker...")
+        await application.start()
         try:
             # We start the polling in the background. `start_polling` is non-blocking.
             await application.updater.start_polling()
